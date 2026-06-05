@@ -106,6 +106,17 @@ launchctl kickstart -k gui/$(id -u)/com.yourname.meeting-presence
 | Away / BeRightBack | Orange-red |
 | Offline / Unknown | Off |
 
+## Testing colors
+
+Use `test_color.py` to preview a color on the Blynclight without restarting the service. Stop the service first so it doesn't hold the device:
+
+```bash
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.yourname.meeting-presence.plist
+.venv/bin/python test_color.py FF4500
+```
+
+Pass any hex color as the argument. When you've found a color you like, update `effects/blynclight.py` and restart the service.
+
 ## Adding more effects
 
 The `effects/` directory supports multiple output devices. Each effect implements the `StatusEffect` base class:

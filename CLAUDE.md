@@ -81,6 +81,12 @@ Teams `availability` field: `Available`, `Busy`, `DoNotDisturb`, `BeRightBack`, 
 
 Note: the local log does not include the `activity` field (InAMeeting, InACall, etc.) — only availability.
 
+## Testing colors
+
+`test_color.py` sets the Blynclight to any hex color directly, useful for dialing in color values without touching the service. Stop the service first (it holds exclusive USB access), test colors, then restart.
+
+Will be extended to support Govee LAN once the bulb is available.
+
 ## Running manually
 
 ```bash
