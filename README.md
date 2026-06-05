@@ -42,7 +42,7 @@ macOS will prompt: **"python3.9 would like to access data from other apps"** —
 
 ## Running as a LaunchAgent (start at login)
 
-The LaunchAgent plist is at `~/Library/LaunchAgents/com.parkerf.meeting-presence.plist`. Create it with:
+The LaunchAgent plist is at `~/Library/LaunchAgents/com.yourname.meeting-presence.plist`. Create it with:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
