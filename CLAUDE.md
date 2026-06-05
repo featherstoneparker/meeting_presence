@@ -73,6 +73,8 @@ launchctl kickstart -k gui/$(id -u)/com.yourname.meeting-presence  # restart
 launchctl print gui/$(id -u)/com.yourname.meeting-presence          # status
 ```
 
+Code changes are not picked up automatically — restart the service after any edits.
+
 ## Presence values
 
 Teams `availability` field: `Available`, `Busy`, `DoNotDisturb`, `BeRightBack`, `Away`, `Offline`, `PresenceUnknown`

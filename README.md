@@ -88,6 +88,14 @@ The LaunchAgent runs outside the GUI session, so macOS won't automatically reuse
 
 The permission is now permanently granted to the Homebrew Python binary and will survive reboots.
 
+### Applying code changes
+
+The LaunchAgent runs a persistent process — file changes are not picked up automatically. After editing any code, restart the service:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.yourname.meeting-presence
+```
+
 ## Light colors
 
 | Teams status | Color |
