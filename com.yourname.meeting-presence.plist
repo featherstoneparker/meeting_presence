@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.yourname.meeting-presence</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/meeting_presence/.venv/bin/python</string>
+        <string>-u</string>
+        <string>/path/to/meeting_presence/main.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/path/to/meeting_presence</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/path/to/meeting_presence/logs/output.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/path/to/meeting_presence/logs/error.log</string>
+</dict>
+</plist>
