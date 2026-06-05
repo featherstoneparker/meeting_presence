@@ -29,15 +29,48 @@ meeting_presence/
 ├── CLAUDE.md
 ├── README.md
 ├── requirements.txt
+├── run.sh                 # shell wrapper (used during debugging, not primary entry point)
 ├── presence/
 │   ├── __init__.py
-│   ├── teams.py       # reads Teams local log
-│   └── base.py        # PresenceProvider ABC + PresenceStatus dataclass
+│   ├── teams.py           # reads Teams local log
+│   └── base.py            # PresenceProvider ABC + PresenceStatus dataclass
 ├── effects/
 │   ├── __init__.py
-│   ├── base.py        # StatusEffect ABC
-│   └── blynclight.py  # Embrava Blynclight USB light
-└── main.py            # polling loop, wires providers + effects
+│   ├── base.py            # StatusEffect ABC
+│   └── blynclight.py      # Embrava Blynclight USB light
+├── logs/
+│   ├── output.log         # LaunchAgent stdout
+│   └── error.log          # LaunchAgent stderr
+└── main.py                # polling loop, wires providers + effects
+```
+
+## Python version
+
+Must use **Homebrew Python 3.9** (`/opt/homebrew/opt/python@3.9/bin/python3.9`):
+- `blynclight` library uses `collections.Sequence` which was removed in Python 3.10
+- System Python (`com.apple.python3`) cannot receive the required macOS TCC permission when running as a background LaunchAgent — macOS silently ignores TCC grants for Apple-signed binaries in that context. Homebrew Python (unsigned) triggers a proper user-facing prompt that sticks.
+
+## macOS TCC permissions
+
+The Teams log directory is protected by macOS's "Other Apps' Data" TCC permission (`kTCCServiceSystemPolicyAppData`). Key findings:
+
+- When running interactively from iTerm2, the permission passes through from iTerm2 (the responsible process) — no separate Python permission is created
+- LaunchAgents run outside the GUI responsible-process chain, so they need their OWN TCC entry
+- System Python (`com.apple.python3`) TCC entries are ignored by `tccd` even when manually inserted — Apple-signed binaries are handled differently
+- Homebrew Python (unsigned, `TeamIdentifier=not set`) can receive and hold the permission normally
+- To force the TCC prompt for the LaunchAgent context: `tccutil reset SystemPolicyAppData`, then restart the LaunchAgent — the prompt appears on screen and clicking Allow creates a persistent entry for the Homebrew Python binary
+
+## LaunchAgent
+
+Installed at `~/Library/LaunchAgents/com.yourname.meeting-presence.plist`. Loaded with:
+```bash
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.yourname.meeting-presence.plist
+```
+
+Managed with:
+```bash
+launchctl kickstart -k gui/$(id -u)/com.yourname.meeting-presence  # restart
+launchctl print gui/$(id -u)/com.yourname.meeting-presence          # status
 ```
 
 ## Presence values
@@ -46,11 +79,7 @@ Teams `availability` field: `Available`, `Busy`, `DoNotDisturb`, `BeRightBack`, 
 
 Note: the local log does not include the `activity` field (InAMeeting, InACall, etc.) — only availability.
 
-## macOS permissions
-
-Terminal/Python needs access to the Teams Group Container. Grant **Full Disk Access** to the Python binary in System Settings → Privacy & Security if running from cron or a background process.
-
-## Running
+## Running manually
 
 ```bash
 .venv/bin/python main.py

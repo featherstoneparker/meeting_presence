@@ -11,31 +11,82 @@ Teams writes presence changes (Available, Busy, DoNotDisturb, etc.) to a local l
 - macOS
 - Microsoft Teams (new Teams 2.0)
 - Embrava Blynclight connected via USB
-- Python 3.9+
+- Homebrew Python 3.9 (see below — version matters)
 
 ## Setup
 
+### 1. Install Homebrew Python 3.9
+
+You must use **Homebrew Python 3.9** specifically:
+- The `blynclight` library is incompatible with Python 3.10+ (uses removed `collections.Sequence`)
+- System Python (`com.apple.python3`) cannot be granted the required macOS privacy permission when running as a background process — Homebrew Python can
+
 ```bash
-python3 -m venv .venv
+brew install python@3.9
+```
+
+### 2. Create the venv and install dependencies
+
+```bash
+/opt/homebrew/opt/python@3.9/bin/python3.9 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-### macOS permissions
-
-The first time you run it, macOS will ask if your terminal app can access data from other apps. Click **Allow**. If you plan to run this from cron or a background process, grant **Full Disk Access** to the Python binary in **System Settings → Privacy & Security → Full Disk Access**.
-
-The Python binary to add is:
-```
-/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3.9
-```
-
-## Usage
+### 3. Run manually first
 
 ```bash
 .venv/bin/python main.py
 ```
 
-The script runs as a loop, printing status changes and updating the light. Press `Ctrl+C` to stop.
+macOS will prompt: **"python3.9 would like to access data from other apps"** — click **Allow**. This grants access to the Teams log directory.
+
+## Running as a LaunchAgent (start at login)
+
+The LaunchAgent plist is at `~/Library/LaunchAgents/com.parkerf.meeting-presence.plist`. Create it with:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.yourname.meeting-presence</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/meeting_presence/.venv/bin/python</string>
+        <string>-u</string>
+        <string>/path/to/meeting_presence/main.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/path/to/meeting_presence</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/path/to/meeting_presence/logs/output.log</string>
+    <key>StandardErrorPath</key>
+    <string>/path/to/meeting_presence/logs/error.log</string>
+</dict>
+</plist>
+```
+
+### Granting the LaunchAgent TCC permission
+
+The LaunchAgent runs outside the GUI session, so macOS won't automatically reuse the permission you granted interactively. To force the prompt to appear for the background process:
+
+1. Reset all "Other Apps Data" permissions:
+   ```bash
+   tccutil reset SystemPolicyAppData
+   ```
+2. Load and start the LaunchAgent:
+   ```bash
+   launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.yourname.meeting-presence.plist
+   launchctl kickstart -k gui/$(id -u)/com.yourname.meeting-presence
+   ```
+3. A prompt will appear on screen — click **Allow**
+
+The permission is now permanently granted to the Homebrew Python binary and will survive reboots.
 
 ## Light colors
 
@@ -49,7 +100,7 @@ The script runs as a loop, printing status changes and updating the light. Press
 
 ## Adding more effects
 
-The `effects/` directory is designed to support multiple output devices. Each effect implements the `StatusEffect` base class:
+The `effects/` directory supports multiple output devices. Each effect implements the `StatusEffect` base class:
 
 ```python
 from effects.base import StatusEffect
