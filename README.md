@@ -11,7 +11,7 @@ Teams writes presence changes (Available, Busy, DoNotDisturb, etc.) to a local l
 - macOS
 - Microsoft Teams (new Teams 2.0)
 - Embrava Blynclight connected via USB
-- Homebrew Python 3.9 (see below — version matters)
+- Homebrew Python 3.9 exactly (see below — version matters)
 
 ## Setup
 
@@ -103,7 +103,7 @@ launchctl kickstart -k gui/$(id -u)/com.yourname.meeting-presence
 | Available | Green |
 | Busy | Red |
 | DoNotDisturb | Red-purple |
-| Away / BeRightBack | Orange |
+| Away / BeRightBack | Orange-red |
 | Offline / Unknown | Off |
 
 ## Adding more effects

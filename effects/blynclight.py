@@ -8,8 +8,8 @@ _COLORS = {
     "Available":      (0,   255, 0),    # green
     "Busy":           (255, 0,   0),    # red
     "DoNotDisturb":   (255, 0,   128),  # red-purple
-    "Away":           (255, 165, 0),    # orange
-    "BeRightBack":    (255, 165, 0),    # orange
+    "Away":           (255, 69,  0),    # orange-red
+    "BeRightBack":    (255, 69,  0),    # orange-red
     "Offline":        (0,   0,   0),    # off
     "PresenceUnknown":(0,   0,   0),    # off
 }
@@ -18,12 +18,18 @@ _DEFAULT_COLOR = (128, 128, 128)  # dim white for unknown states
 
 class BlynclightEffect(StatusEffect):
     def __init__(self) -> None:
-        try:
-            self._light = BlyncLight.get_light()
-        except Exception as e:
-            raise RuntimeError(
-                "Could not open Blynclight. If the Embrava app is running, quit it first."
-            ) from e
+        import time
+        last_err = None
+        for attempt in range(5):
+            try:
+                self._light = BlyncLight.get_light()
+                return
+            except Exception as e:
+                last_err = e
+                time.sleep(1)
+        raise RuntimeError(
+            "Could not open Blynclight after 5 attempts. If the Embrava app is running, quit it first."
+        ) from last_err
 
     def apply(self, status: PresenceStatus) -> None:
         r, g, b = _COLORS.get(status.availability, _DEFAULT_COLOR)
