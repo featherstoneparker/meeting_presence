@@ -10,15 +10,15 @@ _GOVEE_MULTICAST_ADDR = "239.255.255.250"
 _SOCKET_TIMEOUT = 2
 
 _COLORS = {
-    "Available":       (0,   255, 0),
-    "Busy":            (255, 0,   0),
-    "DoNotDisturb":    (255, 0,   128),
-    "Away":            (255, 69,  0),
-    "BeRightBack":     (255, 69,  0),
+    "Available":       (155, 255, 0),
+    "Busy":            (255, 9,   0),
+    "DoNotDisturb":    (0,   0,   0),
+    "Away":            (0,   0,   0),
+    "BeRightBack":     (0,   0,   0),
     "Offline":         (0,   0,   0),
     "PresenceUnknown": (0,   0,   0),
 }
-_DEFAULT_COLOR = (128, 128, 128)
+_DEFAULT_COLOR = (0, 0, 0)
 
 
 def discover_govee_devices(timeout: float = 3.0) -> list[dict]:
@@ -46,6 +46,9 @@ def discover_govee_devices(timeout: float = 3.0) -> list[dict]:
 
 
 def _send_command(ip: str, command: dict) -> None:
+    # Govee devices send responses to port 4002, not back to the sender's ephemeral port.
+    # Binding to 4002 is only needed if we want to read the response; for fire-and-forget
+    # commands (turn/color/brightness) we just send and don't wait.
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(_SOCKET_TIMEOUT)
     try:
@@ -76,4 +79,9 @@ class GoveeLanEffect(StatusEffect):
         self._turn_off()
 
     def _turn_off(self) -> None:
+        # Set color to black first so the bulb doesn't flash its stored color on the way off
+        _send_command(self._ip, {"cmd": "colorwc", "data": {
+            "color": {"r": 0, "g": 0, "b": 0},
+            "colorTemInKelvin": 0,
+        }})
         _send_command(self._ip, {"cmd": "turn", "data": {"value": 0}})

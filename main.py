@@ -1,13 +1,19 @@
 import time
 from presence import TeamsPresence
 from effects import BlynclightEffect
+from effects.govee import GoveeLanEffect
 
-POLL_INTERVAL = 5  # seconds
+POLL_INTERVAL = 2  # seconds
+
+GOVEE_IP = "192.168.x.x"  # set to your Govee bulb's IP or local hostname
 
 
 def main() -> None:
     provider = TeamsPresence()
-    effects = [BlynclightEffect()]
+    effects = [
+        BlynclightEffect(),
+        GoveeLanEffect(ip=GOVEE_IP, brightness=5),
+    ]
 
     last_availability = None
 
